@@ -1596,6 +1596,7 @@ fn main() {
     }
 
     builder = builder
+        .header(search_include(&include_paths, "libavcodec/bsf.h"))
         .header(search_include(&include_paths, "libavutil/adler32.h"))
         .header(search_include(&include_paths, "libavutil/aes.h"))
         .header(search_include(&include_paths, "libavutil/audio_fifo.h"))
