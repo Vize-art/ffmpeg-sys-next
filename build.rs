@@ -212,8 +212,19 @@ fn find_sysroot() -> Option<String> {
     }
 
     if env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("ios") {
+        // Detect if we are building for the simulator
+        let target = env::var("TARGET").unwrap_or_default();
+        let sdk = if target == "x86_64-apple-ios"
+            || target == "i386-apple-ios"
+            || target.ends_with("-ios-sim")
+        {
+            "iphonesimulator"
+        } else {
+            "iphoneos"
+        };
+
         let xcode_output = Command::new("xcrun")
-            .args(["--sdk", "iphoneos", "--show-sdk-path"])
+            .args(["--sdk", sdk, "--show-sdk-path"])
             .output()
             .expect("failed to run xcrun");
 
@@ -1558,6 +1569,10 @@ fn main() {
 
     if let Some(sysroot) = sysroot.as_deref() {
         builder = builder.clang_arg(format!("--sysroot={}", sysroot));
+    }
+
+    if env::var("TARGET").as_deref() == Ok("aarch64-apple-ios-sim") {
+        builder = builder.clang_arg("--target=arm64-apple-ios-simulator");
     }
 
     // The input headers we would like to generate
